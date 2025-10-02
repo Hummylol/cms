@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Test</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+</head>
+<body>
+    <h1>PWA Test Page</h1>
+    <p>This page tests the PWA functionality.</p>
+    
+    <div id="status">
+        <h2>PWA Status:</h2>
+        <ul>
+            <li>Service Worker: <span id="sw-status">Checking...</span></li>
+            <li>Install Prompt: <span id="install-status">Checking...</span></li>
+            <li>Offline Support: <span id="offline-status">Checking...</span></li>
+        </ul>
+    </div>
+    
+    <script>
+        // Check service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    document.getElementById('sw-status').textContent = 'Registered ✓';
+                })
+                .catch(error => {
+                    document.getElementById('sw-status').textContent = 'Failed: ' + error;
+                });
+        } else {
+            document.getElementById('sw-status').textContent = 'Not supported';
+        }
+        
+        // Check install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-status').textContent = 'Available ✓';
+        });
+        
+        // Check offline support
+        if ('serviceWorker' in navigator && 'caches' in window) {
+            document.getElementById('offline-status').textContent = 'Supported ✓';
+        } else {
+            document.getElementById('offline-status').textContent = 'Not supported';
+        }
+    </script>
+</body>
+</html>
