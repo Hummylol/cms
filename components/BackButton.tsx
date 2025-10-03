@@ -10,7 +10,7 @@ export default function BackButton() {
       onClick={() => router.push('/')}
       className="text-sm text-blue-600 mt-6 underline hover:text-blue-800"
     >
-      ← Back to Home
+      ← Home
     </button>
   );
 }

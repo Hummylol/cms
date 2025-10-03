@@ -34,3 +34,62 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Supabase Setup
+
+1. Create a Supabase project. In Settings → API, copy your Project URL and anon public key.
+2. Create a `.env.local` file at the repo root with:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-public-anon-key
+# Server-only key, NEVER expose to client
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+3. Database tables (SQL):
+
+```
+create table if not exists online_registrations (
+  id uuid primary key default gen_random_uuid(),
+  full_name text not null,
+  email text not null,
+  phone text not null,
+  dob date not null,
+  address text not null,
+  course text not null,
+  created_at timestamp with time zone default now()
+);
+
+create table if not exists document_verifications (
+  id uuid primary key default gen_random_uuid(),
+  tenth_marksheet_url text,
+  twelfth_marksheet_url text,
+  transfer_certificate_url text,
+  photo_url text,
+  community_certificate_url text,
+  notes text,
+  created_at timestamp with time zone default now()
+);
+```
+
+4. Ensure RLS is enabled and add policies to allow inserts for anonymous users if desired, or keep inserts through server-side routes only.
+
+5. Run the app and test:
+
+```
+npm install
+npm run dev
+```
+
+Then submit the forms at `admission/onlineregistration` and `admission/docverif`.
+
+## Storage (PDF uploads for Doc Verification)
+
+1. In Supabase Storage, create a bucket named `documents` (private).
+2. Keep it private; uploads happen via server using `SUPABASE_SERVICE_ROLE_KEY`.
+3. The upload endpoint is `POST /api/docverif/upload` with `multipart/form-data` fields:
+   - `applicant` (string)
+   - `tenth` (File, PDF), `twelfth` (File, PDF), `tc` (File, PDF), `photo` (File, PDF), `community` (File, PDF)
+   - `notes` (string)
+4. The server saves files under `documents/<applicant>/<timestamp>-<filename>.pdf` and writes paths to `document_verifications`.

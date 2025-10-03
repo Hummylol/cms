@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Learning Management System",
-  description: "A comprehensive Learning Management System for online education and course management",
+  title: "College Management System",
+  description: "A comprehensive College Management System for online education and course management",
   keywords: ["LMS", "education", "online learning", "courses", "training"],
   authors: [{ name: "LMS Team" }],
   creator: "LMS Team",
