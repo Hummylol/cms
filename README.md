@@ -93,3 +93,13 @@ Then submit the forms at `admission/onlineregistration` and `admission/docverif`
    - `tenth` (File, PDF), `twelfth` (File, PDF), `tc` (File, PDF), `photo` (File, PDF), `community` (File, PDF)
    - `notes` (string)
 4. The server saves files under `documents/<applicant>/<timestamp>-<filename>.pdf` and writes paths to `document_verifications`.
+
+## Face Attendance (Demo)
+
+The attendance demo at `/attendance` uses `face-api.js` and expects model files under `public/models`. If you don't provide them, the app will fall back to a CDN automatically.
+
+Place these files in `public/models` if you want local hosting:
+
+- `tiny_face_detector_model-weights_manifest.json` and shard files
+- `face_landmark_68_model-weights_manifest.json` and shards
+- `face_recognition_model-weights_manifest.json` and shards

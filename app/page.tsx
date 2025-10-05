@@ -21,14 +21,20 @@ export default function HomePage() {
           </Link>
           <Link
             href="/timetable"
-            className="block w-full bg-green-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition"
+            className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition"
           >
             🗓️ Timetable
+          </Link>
+          <Link
+            href="/attendance"
+            className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition"
+          >
+             Attendance
           </Link>
         </div>
 
         <footer className="mt-10 text-xs text-gray-400">
-          © 2025 Jerusalem College Admissions
+          © 2025 Jerusalem College Management System
         </footer>
       </div>
       
