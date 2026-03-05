@@ -45,6 +45,7 @@ export async function POST(req: Request) {
     ]);
 
     const { error } = await supabaseServer.from('document_verifications').insert({
+      applicant_name: applicant,
       tenth_marksheet_url: tenthPath,
       twelfth_marksheet_url: twelfthPath,
       transfer_certificate_url: tcPath,

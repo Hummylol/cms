@@ -1,5 +1,5 @@
 // next.config.ts
-const withPWA = require("next-pwa")({
+const withPWA = require("@ducanh2912/next-pwa").default({
   dest: "public",
   register: true,
   skipWaiting: true,
@@ -138,8 +138,18 @@ const withPWA = require("next-pwa")({
 // Then use as usual:
 const nextConfig = {
   reactStrictMode: true,
+  turbopack: {},
   images: {
-    domains: ['localhost'],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'localhost',
+      }
+    ],
   },
 };
 

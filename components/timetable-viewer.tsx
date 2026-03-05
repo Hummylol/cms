@@ -138,51 +138,60 @@ function generateDaySlots(): TimeSlot[] {
 
 // Build a default timetable skeleton for every dept/year/day
 function buildEmptyTimetable(): { [dept: string]: { [year: string]: DaySchedule } } {
-    const baseSlots = generateDaySlots()
-    const result: { [dept: string]: { [year: string]: DaySchedule } } = {}
-    for (const dept of departments) {
-      result[dept] = {}
-      for (const y of years) {
-        const daySchedule: DaySchedule = {}
-        for (const d of days) {
-          daySchedule[d] = baseSlots.map((s) => ({ ...s, id: `${dept}-${y}-${d}-${s.id}` }))
-        }
-        result[dept][y] = daySchedule
+  const baseSlots = generateDaySlots()
+  const result: { [dept: string]: { [year: string]: DaySchedule } } = {}
+  for (const dept of departments) {
+    result[dept] = {}
+    for (const y of years) {
+      const daySchedule: DaySchedule = {}
+      for (const d of days) {
+        daySchedule[d] = baseSlots.map((s) => ({ ...s, id: `${dept}-${y}-${d}-${s.id}` }))
       }
+      result[dept][y] = daySchedule
     }
-  
-    // ✅ Seed IT 4th Year Monday timetable
-    const monday = result["IT"]["Year 4"]["Monday"]
-    monday[0].subject = "Big Data Analytics"
-    monday[0].faculty = "Dr. D. Sudhagar"
-  
-    monday[1].subject = "Ethical Hacking"
-    monday[1].faculty = "Mrs. K. Pushpavalli"
-  
-    monday[3].subject = "Cloud Computing Lab"
-    monday[3].faculty = "Mr. K. Arun Prasad / Mr. R. Jayakumar"
-  
-    monday[4].subject = "Cloud Computing Lab"
-    monday[4].faculty = "Mr. K. Arun Prasad / Mr. R. Jayakumar"
-  
-    monday[6].subject = "Essence of Indian Traditional Knowledge"
-    monday[6].faculty = "Mrs. K. Shanmugapriya"
-  
-    monday[7].subject = "Cloud Computing"
-    monday[7].faculty = "Mr. K. Arun Prasad"
-  
-    monday[9].subject = "Introduction to EV Vehicle"
-    monday[9].faculty = "Mr. Arul Prakash"
-  
-    monday[10].subject = "AI Tools & Techniques"
-    monday[10].faculty = "Mrs. S. Jeevitha"
-  
-    return result
   }
 
+  // ✅ Seed IT 4th Year Monday timetable
+  const monday = result["IT"]["Year 4"]["Monday"]
+  monday[0].subject = "Big Data Analytics"
+  monday[0].faculty = "Dr. D. Sudhagar"
+
+  monday[1].subject = "Ethical Hacking"
+  monday[1].faculty = "Mrs. K. Pushpavalli"
+
+  monday[3].subject = "Cloud Computing Lab"
+  monday[3].faculty = "Mr. K. Arun Prasad / Mr. R. Jayakumar"
+
+  monday[4].subject = "Cloud Computing Lab"
+  monday[4].faculty = "Mr. K. Arun Prasad / Mr. R. Jayakumar"
+
+  monday[6].subject = "Essence of Indian Traditional Knowledge"
+  monday[6].faculty = "Mrs. K. Shanmugapriya"
+
+  monday[7].subject = "Cloud Computing"
+  monday[7].faculty = "Mr. K. Arun Prasad"
+
+  monday[9].subject = "Introduction to EV Vehicle"
+  monday[9].faculty = "Mr. Arul Prakash"
+
+  monday[10].subject = "AI Tools & Techniques"
+  monday[10].faculty = "Mrs. S. Jeevitha"
+
+  return result
+}
+
 export function TimetableViewer() {
-  // Hardcode user as staff for now (true => editable)
-  const isStaff = true
+  const [role, setRole] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  // check auth
+  React.useEffect(() => {
+    setRole(localStorage.getItem("mockUserRole"))
+    setMounted(true)
+  }, [])
+
+  const isStaff = role === "staff"
+  const isStudent = role && role.startsWith("student")
 
   // initial timetable state (in memory)
   const initial = useMemo(() => buildEmptyTimetable(), [])
@@ -200,6 +209,7 @@ export function TimetableViewer() {
   const schedule = timetable[selectedDept][selectedYear][selectedDay] || []
 
   function startEdit(slot: TimeSlot) {
+    if (!isStaff) return
     setEditingId(slot.id)
     setEditingDraft({ ...slot })
   }
@@ -218,33 +228,33 @@ export function TimetableViewer() {
         result[dept][y] = daySchedule
       }
     }
-  
+
     // ✅ Seed IT 4th Year Monday timetable
     const monday = result["IT"]["Year 4"]["Monday"]
     monday[0].subject = "Big Data Analytics"
     monday[0].faculty = "Dr. D. Sudhagar"
-  
+
     monday[1].subject = "Ethical Hacking"
     monday[1].faculty = "Mrs. K. Pushpavalli"
-  
+
     monday[3].subject = "Cloud Computing Lab"
     monday[3].faculty = "Mr. K. Arun Prasad / Mr. R. Jayakumar"
-  
+
     monday[4].subject = "Cloud Computing Lab"
     monday[4].faculty = "Mr. K. Arun Prasad / Mr. R. Jayakumar"
-  
+
     monday[6].subject = "Essence of Indian Traditional Knowledge"
     monday[6].faculty = "Mrs. K. Shanmugapriya"
-  
+
     monday[7].subject = "Cloud Computing"
     monday[7].faculty = "Mr. K. Arun Prasad"
-  
+
     monday[9].subject = "Introduction to EV Vehicle"
     monday[9].faculty = "Mr. Arul Prakash"
-  
+
     monday[10].subject = "AI Tools & Techniques"
     monday[10].faculty = "Mrs. S. Jeevitha"
-  
+
     return result
   }
 
@@ -327,13 +337,14 @@ export function TimetableViewer() {
           </Select>
         </div>
 
-        
+
       </div>
 
       {/* Day header */}
       <div className="flex items-center justify-center gap-4">
         <h2 className="text-lg font-semibold">{selectedDept} — {selectedYear} — {selectedDay}</h2>
-        {isStaff && <div className="text-xs text-muted-foreground">Viewing as <span className="font-bold bg-red-800 text-white px-1 py-0.5 rounded-full">staff</span></div>}
+        {mounted && isStaff && <div className="text-xs text-muted-foreground">Viewing as <span className="font-bold bg-red-800 text-white px-2 py-0.5 rounded-full">Staff</span></div>}
+        {mounted && isStudent && <div className="text-xs text-muted-foreground">Viewing as <span className="font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">Student (Read-only)</span></div>}
       </div>
 
       <div className="space-y-3">
@@ -459,7 +470,7 @@ export function TimetableViewer() {
         })}
       </div>
 
-      
+
     </div>
   )
 }
