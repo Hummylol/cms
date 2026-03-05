@@ -23,7 +23,10 @@ export default function DocVerification() {
       if (form.notes) fd.set('notes', form.notes);
       if (form.applicant) fd.set('applicant', form.applicant);
       const res = await fetch('/api/docverif/upload', { method: 'POST', body: fd });
-      const json = await res.json();
+      const contentType = res.headers.get('content-type') || '';
+      const json = contentType.includes('application/json')
+        ? await res.json()
+        : { error: `Server error (${res.status}): ${await res.text().then(t => t.slice(0, 120))}` };
       if (!res.ok) throw new Error(json.error || 'Failed to submit');
       setResult('Submitted successfully.');
       (e.target as HTMLFormElement).reset();
@@ -37,7 +40,7 @@ export default function DocVerification() {
 
   return (
     <div className="p-4 max-w-md mx-auto">
-      <BackButton/>
+      <BackButton />
       <h1 className="text-xl font-bold text-blue-700 mb-2">Document Verification</h1>
       {result && (
         <div className="mb-2 text-sm {result.includes('success') ? 'text-green-600' : 'text-red-600'}">{result}</div>
