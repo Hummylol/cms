@@ -1,31 +1,54 @@
 import BackButton from "@/components/BackButton";
+import { ExamTimetableViewer } from "@/components/exam-timetable-viewer";
 
 export default function ExamTimetablePage() {
     return (
-        <>
-            <BackButton />
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex flex-col items-center justify-center px-4 py-16">
-                <div className="w-full max-w-lg text-center">
-                    <div className="text-6xl mb-6">📋</div>
-                    <h1 className="text-2xl font-bold text-blue-700 mb-3">End Semester Timetable</h1>
-                    <p className="text-gray-500 mb-8 text-sm leading-relaxed">
-                        The end semester examination timetable will be published here once released by the Controller of Examinations.
-                        Check back closer to the exam period.
-                    </p>
-                    <div className="bg-white border border-blue-100 rounded-xl p-6 shadow-sm text-left space-y-3">
-                        <p className="text-sm font-semibold text-blue-700 uppercase tracking-wide">What to expect</p>
-                        <ul className="text-sm text-gray-600 space-y-2">
-                            <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">•</span> Date and time for each subject exam</li>
-                            <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">•</span> Examination hall/venue details</li>
-                            <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">•</span> Session (FN / AN) information</li>
-                            <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">•</span> Department-wise schedule</li>
-                        </ul>
+        <div className="flex min-h-screen flex-col bg-background">
+            <main className="flex-1 pb-12">
+                <section className="bg-blue-900 py-10 text-primary-foreground relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-10">
+                        <div className="text-9xl font-black">EXAM</div>
                     </div>
-                    <p className="mt-6 text-xs text-gray-400">
-                        🕐 Timetable not yet published. Please check back later.
-                    </p>
-                </div>
-            </div>
-        </>
+                    <div className="container relative z-10">
+                        <div className="flex flex-col items-center md:items-start max-w-3xl mx-auto md:mx-0">
+                            <BackButton />
+                            <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl mb-2 mt-4">
+                                End Semester Timetable
+                            </h1>
+                            <p className="text-blue-100/80 text-lg max-w-xl">
+                                Official examination schedule for all departments and years.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="py-8">
+                    <div className="container">
+                        <div className="mx-auto max-w-3xl">
+                            <ExamTimetableViewer />
+                        </div>
+                    </div>
+                </section>
+
+                <section className="container mt-8 lg:mt-12">
+                    <div className="mx-auto max-w-3xl bg-blue-50 border border-blue-100 rounded-2xl p-6 shadow-sm">
+                        <div className="flex items-start gap-4">
+                            <div className="bg-blue-600 text-white p-2 rounded-lg">
+                                <span className="text-xl">⚠️</span>
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-blue-900 mb-1">Important Instructions</h3>
+                                <ul className="text-sm text-blue-800/80 space-y-1.5 list-disc pl-4">
+                                    <li>Students must report to the examination hall 30 minutes before the session starts.</li>
+                                    <li>Carry your Hall Ticket and College ID card for all examinations.</li>
+                                    <li>Electronic gadgets and smartwatches are strictly prohibited inside the hall.</li>
+                                    <li>Verify your subject codes carefully before the exam.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
     );
 }

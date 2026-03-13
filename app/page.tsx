@@ -61,11 +61,8 @@ export default function HomePage() {
           <Link href="/seating-allotment" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition">
             🪑 Semester Exam Seating Allotment
           </Link>
-          <Link href="/hallticket" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition">
-            🎫 Hall Ticket Generation
-          </Link>
           <Link href="/malpractice-fees" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition">
-            ⚠️ Malpractice Fees Payment
+            ⚠️ Malpractice Documentation
           </Link>
           <Link href="/placement" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition">
             🚀 Placement Prediction
