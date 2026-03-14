@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
+import * as XLSX from "xlsx";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +13,17 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import { Plus, Minus, Trash2 } from "lucide-react";
 import {
     Select,
@@ -69,7 +81,79 @@ export default function ResultsPage() {
     const [isAddingRow, setIsAddingRow] = useState(false);
     const [newRollNo, setNewRollNo] = useState("");
 
+    // Dialog State
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [dialogTitle, setDialogTitle] = useState("");
+    const [dialogMessage, setDialogMessage] = useState("");
+    const [dialogAction, setDialogAction] = useState<() => void>(() => { });
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const bstr = evt.target?.result;
+                const wb = XLSX.read(bstr, { type: "binary" });
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
+                const data = XLSX.utils.sheet_to_json(ws);
+
+                if (data.length === 0) {
+                    toast.error("Uploaded Excel file is empty.");
+                    return;
+                }
+
+                // Identify the register number column
+                const firstRow = data[0] as Record<string, any>;
+                const columns = Object.keys(firstRow);
+                const regNoCol = columns.find(col =>
+                    ["register number", "reg no", "reg number", "roll no", "roll number"].includes(col.toLowerCase().trim())
+                );
+
+                if (!regNoCol) {
+                    toast.error("Could not find a 'Register Number' or 'Reg No' column in the Excel file.");
+                    return;
+                }
+
+                // Identify subject columns (all other columns)
+                const uploadedSubjects = columns.filter(col => col !== regNoCol);
+
+                // Build new students array
+                const newStudents: StudentMarks[] = [];
+
+                data.forEach((row: any) => {
+                    const regNo = String(row[regNoCol]).trim();
+                    if (!regNo) return; // Skip empty rows
+
+                    const marks: Record<string, string> = {};
+                    uploadedSubjects.forEach(sub => {
+                        // Ensure grades are strings
+                        marks[sub] = row[sub] != null ? String(row[sub]).trim() : "";
+                    });
+
+                    newStudents.push({ regNo, marks });
+                });
+
+                setSubjects(uploadedSubjects);
+                setStudents(newStudents);
+
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+
+                toast.success(`Successfully loaded ${newStudents.length} records. Don't forget to 'Save Changes'.`);
+            } catch (error) {
+                console.error("Error parsing Excel file:", error);
+                toast.error("An error occurred while parsing the Excel file.");
+            }
+        };
+        reader.readAsBinaryString(file);
+    };
 
     // Re-load data whenever class selection changes
     useEffect(() => {
@@ -153,7 +237,7 @@ export default function ResultsPage() {
 
         localStorage.setItem(marksKey, JSON.stringify(students));
         localStorage.setItem(subjectsKey, JSON.stringify(subjects));
-        alert(`Results for ${selectedDept} - ${selectedYear} saved successfully!`);
+        toast.success(`Results for ${selectedDept} - ${selectedYear} saved successfully!`);
     };
 
     const handleLogout = () => {
@@ -211,7 +295,7 @@ export default function ResultsPage() {
         const rollId = newRollNo.trim();
         // Check if exists
         if (students.find(s => s.regNo === rollId)) {
-            alert("This Roll No already exists in this class.");
+            toast.error("This Roll No already exists in this class.");
             return;
         }
 
@@ -225,9 +309,28 @@ export default function ResultsPage() {
     };
 
     const handleDeleteRow = (regNo: string) => {
-        if (confirm(`Are you sure you want to delete ${regNo}?`)) {
+        setDialogTitle("Delete Student Record");
+        setDialogMessage(`Are you sure you want to delete ${regNo}? This action cannot be undone unless you upload their data again.`);
+        setDialogAction(() => () => {
             setStudents(prev => prev.filter(s => s.regNo !== regNo));
-        }
+            toast.success(`Deleted student ${regNo}`);
+        });
+        setDialogOpen(true);
+    };
+
+    const handleDeleteSubject = (subjectToDelete: string) => {
+        setDialogTitle("Delete Subject");
+        setDialogMessage(`Are you sure you want to delete the subject ${subjectToDelete}? This will remove grades for this subject across all students.`);
+        setDialogAction(() => () => {
+            setSubjects(prev => prev.filter(sub => sub !== subjectToDelete));
+            setStudents(prev => prev.map(s => {
+                const newMarks = { ...s.marks };
+                delete newMarks[subjectToDelete];
+                return { ...s, marks: newMarks };
+            }));
+            toast.success(`Deleted subject ${subjectToDelete}`);
+        });
+        setDialogOpen(true);
     };
 
     if (!role) return <div className="p-8 text-center">Loading...</div>;
@@ -241,6 +344,23 @@ export default function ResultsPage() {
 
     return (
         <div className="container mx-auto p-4 md:p-8">
+            <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{dialogTitle}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {dialogMessage}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={dialogAction} className="bg-red-600 hover:bg-red-700 text-white">
+                            Continue
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             <div className="flex justify-between items-center mb-6 border-b pb-4">
                 <div>
                     <h1 className="text-3xl font-bold">Results Portal</h1>
@@ -277,7 +397,22 @@ export default function ResultsPage() {
                         </Select>
 
                         <div className="flex-1" />
-                        <Button onClick={saveResults} className="bg-blue-600 hover:bg-blue-700 text-white">Save Changes for {selectedDept}-{selectedYear}</Button>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="file"
+                                accept=".xlsx, .xls, .csv"
+                                className="hidden"
+                                ref={fileInputRef}
+                                onChange={handleFileUpload}
+                            />
+                            <Button
+                                variant="outline"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                Upload Excel
+                            </Button>
+                            <Button onClick={saveResults} className="bg-blue-600 hover:bg-blue-700 text-white">Save Changes for {selectedDept}-{selectedYear}</Button>
+                        </div>
                     </CardContent>
                 </Card>
             )}
@@ -299,7 +434,22 @@ export default function ResultsPage() {
                                         {role === "staff" && <TableHead className="w-[50px] sticky left-0 z-20 bg-white shadow-[1px_0_0_0_#e2e8f0] p-0 px-4"></TableHead>}
                                         <TableHead className={`w-[180px] sticky ${role === "staff" ? 'left-[50px]' : 'left-0'} z-20 bg-white shadow-[1px_0_0_0_#e2e8f0] p-0 px-4`}>Reg No.</TableHead>
                                         {subjects.map(sub => (
-                                            <TableHead key={sub} className="min-w-[100px]">{sub}</TableHead>
+                                            <TableHead key={sub} className="min-w-[100px]">
+                                                <div className="flex items-center gap-1">
+                                                    <span>{sub}</span>
+                                                    {role === "staff" && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-5 w-5 text-red-500 hover:text-red-700 hover:bg-red-100"
+                                                            onClick={() => handleDeleteSubject(sub)}
+                                                            title={`Delete ${sub}`}
+                                                        >
+                                                            <Minus className="h-3 w-3" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </TableHead>
                                         ))}
                                         {role === "staff" && (
                                             <TableHead className="w-[150px]">

@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import { Bot } from 'lucide-react';
 
 export default function HomePage() {
   const [userText, setUserText] = useState<string | null>(null);
@@ -47,13 +48,15 @@ export default function HomePage() {
           <Link href="/results" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition">
             📊 Results
           </Link>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 py-1">
-            <div className="flex-1 h-px bg-blue-100" />
-            <span className="text-xs text-blue-300 font-medium uppercase tracking-wide">Upcoming</span>
-            <div className="flex-1 h-px bg-blue-100" />
-          </div>
+          <Link href="/clubs" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition">
+            🎭 Clubs & Communities
+          </Link>
+          <Link href="/notes" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition">
+            📚 Notes & Resources
+          </Link>
+          <Link href="/assignments" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition">
+            📝 Assignments
+          </Link>
 
           <Link href="/exam-timetable" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition">
             📋 End Semester Timetable
@@ -73,6 +76,15 @@ export default function HomePage() {
           © 2025 Jerusalem College Management System
         </footer>
       </div>
+
+      {/* Floating Chatbot Button */}
+      <button
+        onClick={() => alert("Chatbot coming soon!")}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-full flex items-center justify-center text-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(79,70,229,0.3)] hover:-translate-y-1 transition-all duration-300 z-50 group border border-white/20"
+        title="Need help?"
+      >
+        <Bot className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" />
+      </button>
 
       <PWAInstallPrompt />
     </main>
